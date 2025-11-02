@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Stageproject_ATS_AP2025Q2.Controllers
 {
-      /// Users must be authorized (logged in) to submit or view applications.
+    
     /// <summary>
     /// This controller handles job applications submitted by users.
     /// Users must be authorized (logged in) to submit or view applications.
