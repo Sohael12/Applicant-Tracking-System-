@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 namespace Stageproject_ATS_AP2025Q2.Controllers
 {
+      /// Users must be authorized (logged in) to submit or view applications.
     /// <summary>
     /// This controller handles job applications submitted by users.
     /// Users must be authorized (logged in) to submit or view applications.
@@ -13,7 +14,7 @@ namespace Stageproject_ATS_AP2025Q2.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class ApplicationController : ControllerBase
+    public class ApplicationController : ControllerBase 
     {
         private readonly ApplicationService _applicationService;
 
