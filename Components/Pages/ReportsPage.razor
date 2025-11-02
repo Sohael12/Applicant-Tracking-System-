@@ -1,0 +1,170 @@
+@page "/reports"
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<main class="max-w-7xl mx-auto px-6 py-10">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Reports Dashboard</h1>
+        <p class="text-gray-600">Access and download detailed reports for vacancies, applications, and training progress</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(SuccessMessage))
+    {
+        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center text-green-800">
+            <i class="fas fa-check-circle mr-3 text-green-500"></i>
+            <span>@SuccessMessage</span>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center text-red-800">
+            <i class="fas fa-exclamation-triangle mr-3 text-red-500"></i>
+            <span>@ErrorMessage</span>
+        </div>
+    }
+
+    <!-- Reports Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Vacancy Report -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-300">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0 h-12 w-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-alt text-white text-lg"></i>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Vacancy Report</h2>
+                    <p class="text-gray-600 text-sm">All vacancies and applications</p>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6 text-sm">
+                Comprehensive Excel report containing all vacancies with related application statistics, status overview, and candidate details.
+            </p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">Excel format</span>
+                <button @onclick="DownloadVacancyReport"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Application Report -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-300">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0 h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-bar text-white text-lg"></i>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Application Report</h2>
+                    <p class="text-gray-600 text-sm">All applications and statuses</p>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6 text-sm">
+                Detailed Excel report with all job applications, current statuses, timeline history, and candidate contact information.
+            </p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">Excel format</span>
+                <button @onclick="DownloadApplicationReport"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Training Report -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-300">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0 h-12 w-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-lg"></i>
+                </div>
+                <div class="ml-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Training Report</h2>
+                    <p class="text-gray-600 text-sm">Onboarding and training progress</p>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6 text-sm">
+                Excel report tracking candidates in training and onboarding phases, including progress metrics and completion status.
+            </p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">Excel format</span>
+                <button @onclick="DownloadTrainingReport"
+                        class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Report Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="flex items-center text-gray-600">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                <span>All reports are generated in Excel format</span>
+            </div>
+            <div class="flex items-center text-gray-600">
+                <i class="fas fa-clock text-orange-500 mr-2"></i>
+                <span>Reports include real-time data</span>
+            </div>
+            <div class="flex items-center text-gray-600">
+                <i class="fas fa-database text-green-500 mr-2"></i>
+                <span>Data is exported directly from the database</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+@code {
+    private string SuccessMessage = "";
+    private string ErrorMessage = "";
+
+    private async Task DownloadVacancyReport()
+    {
+        try
+        {
+            var url = NavigationManager.BaseUri + "api/reports/vacancy";
+            NavigationManager.NavigateTo(url, true);
+            SuccessMessage = "Vacancy report download started";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error downloading vacancy report: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadApplicationReport()
+    {
+        try
+        {
+            var url = NavigationManager.BaseUri + "api/reports/applications";
+            NavigationManager.NavigateTo(url, true);
+            SuccessMessage = "Application report download started";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error downloading application report: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadTrainingReport()
+    {
+        try
+        {
+            var url = NavigationManager.BaseUri + "api/reports/training";
+            NavigationManager.NavigateTo(url, true);
+            SuccessMessage = "Training report download started";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error downloading training report: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,28 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Stageproject_ATS_AP2025Q2.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddIsActiveTowsAppUser : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.RenameColumn(
+                name: "IsInactive",
+                table: "AspNetUsers",
+                newName: "IsActive");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.RenameColumn(
+                name: "IsActive",
+                table: "AspNetUsers",
+                newName: "IsInactive");
+        }
+    }
+}

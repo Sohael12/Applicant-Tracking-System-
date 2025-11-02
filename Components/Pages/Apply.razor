@@ -1,0 +1,348 @@
+@page "/apply/{Id:int}"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Stageproject_ATS_AP2025Q2.Models
+@using Stageproject_ATS_AP2025Q2.Services
+
+@inject Stageproject_ATS_AP2025Q2.Services.GraphEmailService GraphEmailService
+@inject ApplicationService ApplicationService
+@inject VacancyService VacancyService
+@inject NavigationManager Navigation
+@inject UserManager<AppUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Apply for Position - @vacancy?.Title</PageTitle>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Apply for Position</h1>
+        <p class="text-xl text-gray-600 font-medium">@vacancy?.Title</p>
+        <div class="w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Vacancy & User Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Vacancy Card -->
+            @if (vacancy != null)
+            {
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <span class="text-blue-600 text-lg">📋</span>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Position Details</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="text-sm text-gray-600 leading-relaxed">
+                            @((MarkupString)vacancy.Description?.Replace("\n", "<br />"))
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- User Info Card -->
+            @if (currentUser != null)
+            {
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <span class="text-green-600 text-lg">👤</span>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Applicant Information</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Full Name</label>
+                            <p class="text-sm font-medium text-gray-900">@currentUser.FirstName @currentUser.LastName</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
+                            <p class="text-sm text-gray-900">
+                                <a href="mailto:@currentUser.Email" class="text-blue-600 hover:text-blue-800 transition-colors">
+                                    @currentUser.Email
+                                </a>
+                            </p>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(currentUser.Address))
+                        {
+                            <div>
+                                <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Address</label>
+                                <p class="text-sm text-gray-900 whitespace-pre-line">@currentUser.Address</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Right Column - Application Form -->
+        <div class="lg:col-span-2">
+            @if (currentUser != null)
+            {
+                <!-- Success State -->
+                @if (submitSuccess)
+                {
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-green-600 text-2xl">✓</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Application Submitted</h3>
+                        <p class="text-gray-600 mb-6">Thank you for your application. We'll review your submission and get back to you soon.</p>
+                        <button onclick="window.location.href='/'" 
+                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            Return to Home
+                        </button>
+                    </div>
+                }
+                <!-- Already Applied State -->
+                else if (application != null && application.Id != 0)
+                {
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-yellow-600 text-2xl">⚠️</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Application Already Submitted</h3>
+                        <p class="text-gray-600 mb-6">You have already applied for this position. We are currently reviewing your application.</p>
+                        <button onclick="window.location.href='/'" 
+                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            Browse Other Positions
+                        </button>
+                    </div>
+                }
+                <!-- Application Form -->
+                else
+                {
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <!-- Form Header -->
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-xl font-semibold text-gray-900">Application Form</h2>
+                            <p class="text-sm text-gray-600 mt-1">Please complete all sections below</p>
+                        </div>
+
+                        <!-- Form Content -->
+                        <div class="p-6">
+                            <EditForm Model="application" OnValidSubmit="HandleValidSubmit" FormName="ApplicationForm">
+                                <DataAnnotationsValidator />
+                                <Blazorise.ValidationSummary />
+
+                                <!-- Motivation & About Yourself -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="motivation" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Motivation *
+                                        </label>
+                                        <InputTextArea id="motivation"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                       @bind-Value="application.Motivation"
+                                                       placeholder="Why are you interested in this position?"
+                                                       rows="5" />
+                                        <ValidationMessage For="@(() => application.Motivation)" />
+                                    </div>
+
+                                    <div>
+                                        <label for="aboutYourself" class="block text-sm font-medium text-gray-700 mb-2">
+                                            About Yourself *
+                                        </label>
+                                        <InputTextArea id="aboutYourself"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                       @bind-Value="application.AboutYourself"
+                                                       placeholder="Your experience, skills, and qualifications"
+                                                       rows="5" />
+                                        <ValidationMessage For="@(() => application.AboutYourself)" />
+                                    </div>
+                                </div>
+
+                                <!-- CV Upload -->
+                                <div class="mb-8">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Curriculum Vitae *
+                                    </label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                                        <InputFile id="resumeUpload" OnChange="OnInputFileChange" 
+                                                   class="hidden" />
+                                        <label for="resumeUpload" class="cursor-pointer">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <span class="text-3xl text-gray-400 mb-2">📄</span>
+                                                <p class="text-sm text-gray-600 mb-1">
+                                                    <span class="text-blue-600 font-medium">Click to upload</span> or drag and drop
+                                                </p>
+                                                <p class="text-xs text-gray-500">PDF or Word documents (MAX. 10MB)</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(uploadFileName))
+                                    {
+                                        <div class="mt-3 flex items-center text-sm text-gray-700">
+                                            <span class="text-green-600 mr-2">✓</span>
+                                            <span class="font-medium">@uploadFileName</span>
+                                            <span class="ml-2 text-gray-500">- Ready to submit</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Error Message -->
+                                @if (!string.IsNullOrEmpty(errorMessage))
+                                {
+                                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                        <div class="flex items-center">
+                                            <span class="text-red-600 mr-2">⚠️</span>
+                                            <p class="text-sm text-red-800">@errorMessage</p>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Submit Button -->
+                                <div class="flex justify-end pt-4 border-t border-gray-200">
+                                    <button type="submit" 
+                                            class="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Submit Application
+                                    </button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</main>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Application application = new Application();
+    private bool submitSuccess = false;
+    private string uploadFileName = "";
+    private string errorMessage = "";
+    private AppUser? currentUser;
+    private Vacancy? vacancy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                currentUser = await UserManager.FindByIdAsync(userId);
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (currentUser != null)
+        {
+            application = await ApplicationService.GetByVacancyAndUserAsync(Id, currentUser.Id)
+                ?? new Application { VacancyId = Id, UserId = currentUser.Id };
+        }
+
+        vacancy = await VacancyService.GetByIdAsync(Id);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        errorMessage = "";
+
+        if (currentUser == null)
+        {
+            errorMessage = "You must be logged in to apply.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(application.Motivation) || string.IsNullOrWhiteSpace(application.AboutYourself))
+        {
+            errorMessage = "Please fill in all required fields before submitting your application.";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(application.ResumeFilePath))
+        {
+            errorMessage = "Please upload your CV before submitting.";
+            return;
+        }
+
+        try
+        {
+            application.UserId = currentUser.Id;
+            await ApplicationService.SaveApplicationAsync(application);
+            submitSuccess = true;
+
+            // Send confirmation email
+            var subject = $"Application Confirmation – {vacancy?.Title}";
+            var body = $@"
+<html>
+<body>
+<p>Dear {currentUser.FirstName},</p>
+<p>Thank you for applying for the position of <strong>{vacancy?.Title}</strong>.</p>
+<p>We have received your application and will review it carefully. We'll be in touch soon regarding the next steps.</p>
+<p>Best regards,<br />Recruitment Team</p>
+</body>
+</html>";
+
+            await GraphEmailService.SendEmailAsync(currentUser.Email, subject, body);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred while submitting your application: {ex.Message}";
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        errorMessage = "";
+        var file = e.File;
+
+        if (file != null)
+        {
+            var allowedExtensions = new[] { ".pdf", ".docx" };
+            var extension = Path.GetExtension(file.Name).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                errorMessage = "Only PDF or Word documents are allowed.";
+                return;
+            }
+
+            // Check file size (10MB limit)
+            if (file.Size > 10 * 1024 * 1024)
+            {
+                errorMessage = "File size must be less than 10MB.";
+                return;
+            }
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine("wwwroot", "uploads", fileName);
+
+            var directory = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directory!))
+            {
+                Directory.CreateDirectory(directory!);
+            }
+
+            using var fileStream = new FileStream(filePath, FileMode.Create);
+            await file.OpenReadStream().CopyToAsync(fileStream);
+
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream().CopyToAsync(memoryStream);
+            application.cv = memoryStream.ToArray();
+
+            application.ResumeFilePath = $"uploads/{fileName}";
+            uploadFileName = file.Name;
+            StateHasChanged();
+        }
+    }
+}

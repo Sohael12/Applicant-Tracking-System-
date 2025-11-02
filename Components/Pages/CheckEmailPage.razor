@@ -1,0 +1,99 @@
+@page "/check-email"
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.WebUtilities
+
+<PageTitle>Email Confirmation</PageTitle>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-lg w-full text-center">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6"> Email Confirmation</h1>
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="mb-6">
+                <p class="text-lg font-medium text-gray-700">@Message</p>
+            </div>
+        }
+
+        <div class="mt-4">
+            <p class="text-gray-500 mb-6">
+                Please check your inbox and click the confirmation link to activate your account. 
+                You will be redirected to the login page automatically.
+            </p>
+
+            @if (IsLoading)
+            {
+                <div class="flex justify-center">
+                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+                </div>
+            }
+
+           
+        </div>
+    </div>
+</div>
+
+<style>
+    .loader {
+        border-top-color: #6366f1;
+        border: 4px solid #f3f3f3;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+    }
+
+    .keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+
+@code {
+    [Parameter] public string userId { get; set; }
+    [Parameter] public string token { get; set; }
+
+    public string Message { get; set; }
+    private bool IsLoading { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("userId", out var uid) &&
+            QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var tkn))
+        {
+            try
+            {
+                var client = new HttpClient();
+                var url = $"https://localhost:5001/api/account/confirmemail?userId={uid}&token={tkn}";
+                var response = await client.GetAsync(url);
+
+                Message = await response.Content.ReadAsStringAsync();
+
+                // Success: show message briefly then redirect
+                if (response.IsSuccessStatusCode)
+                {
+                    IsLoading = false;
+                    StateHasChanged();
+                    await Task.Delay(2500);
+                    NavigationManager.NavigateTo("/login", forceLoad: true);
+                }
+            }
+            catch
+            {
+                Message = "An unexpected error occurred. Please try again later.";
+                IsLoading = false;
+            }
+        }
+        else
+        {
+            Message = "Invalid confirmation link.";
+            IsLoading = false;
+        }
+    }
+
+   
+}

@@ -1,0 +1,87 @@
+﻿@namespace Stageproject_ATS_AP2025Q2.Components
+@using Stageproject_ATS_AP2025Q2.Components.Layout
+@using Microsoft.AspNetCore.Components.Routing
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@3.2.0/dist/fullcalendar.min.css" rel="stylesheet">
+    <link href="_content/Syncfusion.Blazor/styles/bootstrap5.css" rel="stylesheet" />
+    <link href="_content/BlazorCalendar/BlazorCalendar.css" rel="stylesheet" />
+    <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.2/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.bubble.css" rel="stylesheet" />
+    <link href="_content/Syncfusion.Blazor/styles/bootstrap5.css" rel="stylesheet" />
+
+ 
+
+
+
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState>
+
+<Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <LayoutView Layout="@typeof(MainLayout)">
+                <RouteView RouteData="@routeData" />
+            </LayoutView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="p-4">
+                    <h1 class="text-danger">404 - Page Not Found</h1>
+                    <p>Sorry, there's nothing at this address.</p>
+                    <a href="/" class="btn btn-primary">Return to Home</a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+        
+    </Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState>
+    
+    <script src="_framework/blazor.web.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.2.0/dist/fullcalendar.min.js"></script>
+    <script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.2/main.min.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="~/js/BlazorQuill.js"></script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script src="_content/Blazored.TextEditor/quill-blot-formatter.min.js"></script>
+<script src="_content/Blazored.TextEditor/Blazored-BlazorQuill.js"></script>
+<script src="_content/Syncfusion.Blazor/scripts/syncfusion-blazor.min.js"></script>
+
+<script>
+    window.quillInterop = {
+        init: function (elementId, initialContent) {
+            const quill = new Quill('#' + elementId, { theme: 'snow' });
+            quill.root.innerHTML = initialContent || '';
+            return quill;
+        },
+        getContent: function (quill) {
+            return quill.root.innerHTML;
+        }
+    };
+</script>
+
+</body>
+
+</html>
+
+@code {
+}

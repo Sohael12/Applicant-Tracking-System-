@@ -1,0 +1,18 @@
+@page "/editor"
+@using Blazored.TextEditor
+
+<h3>Template bewerken</h3>
+
+<BlazoredTextEditor @ref="editor" />
+
+<button @onclick="Save">Opslaan</button>
+
+@code {
+    private BlazoredTextEditor editor;
+
+    private async Task Save()
+    {
+        var html = await editor.GetHTML();
+        Console.WriteLine(html); // of sla het ergens op
+    }
+}

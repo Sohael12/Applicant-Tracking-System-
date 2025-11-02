@@ -1,0 +1,19 @@
+@code {
+    private string _message = "Initial Message";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simuleer een asynchrone taak, zoals het ophalen van gegevens van een API
+        await Task.Delay(2000); // Dit simuleert vertraging van 2 seconden
+
+        // Na de vertraging, werk de status bij op de juiste thread
+        await InvokeAsync(() =>
+        {
+            _message = "Updated Message after async task!";
+            StateHasChanged(); // Zorg ervoor dat de UI opnieuw wordt gerenderd met de nieuwe waarde.
+        });
+    }
+}
+
+<h3>My Component</h3>
+<p>@_message</p>

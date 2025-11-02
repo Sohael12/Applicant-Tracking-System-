@@ -1,0 +1,20 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^4.1.4"
+  },
+  "name": "stageproject-ats-ap2025q2",
+  "version": "1.0.0",
+  "description": "TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://daxp@dev.azure.com/daxp/DXP%20Stageprojecten/_git/Stageproject%20ATS%20AP2025Q2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

@@ -1,0 +1,218 @@
+@page "/vacancies"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Stageproject_ATS_AP2025Q2.Services
+@using Stageproject_ATS_AP2025Q2.Models
+@inject VacancyService VacancyService
+@inject AuthenticationStateProvider AuthProvider
+@inject IServiceProvider ServiceProvider
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<div class="container mx-auto px-6 py-16">
+    <div class="flex justify-between items-center mb-12">
+        <h3 class="text-4xl font-extrabold text-gray-900">Vacancies</h3>
+
+        <AuthorizeView>
+            <Authorized>
+                @if (IsAdmin)
+                {
+                    <NavLink href="/create-vacancy"
+                             class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-3 rounded-full shadow-lg hover:scale-105 transform transition duration-300">
+                        <i class="bi bi-plus-circle mr-2"></i> New Vacancy
+                    </NavLink>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Vacancy Title</label>
+                <select @bind="selectedTitle"
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">All Titles</option>
+                    @foreach (var title in AvailableTitles)
+                    {
+                        <option value="@title">@title</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date (on or after)</label>
+                <input @bind="filterStartDate"
+                       type="date"
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+            </div>
+
+            <div class="flex items-end">
+                <button @onclick="ClearFilters"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (vacancies == null)
+    {
+        <div class="flex justify-center items-center">
+            <div class="animate-spin h-12 w-12 border-4 border-blue-600 rounded-full border-t-transparent"></div>
+        </div>
+    }
+    else if (!vacancies.Any())
+    {
+        <p class="text-center text-gray-500 text-lg mt-10">Er zijn momenteel geen vacatures beschikbaar.</p>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            @foreach (var vacancy in PagedVacancies)
+            {
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 flex flex-col justify-between hover:shadow-xl transition duration-300">
+                    <div class="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-full w-fit mb-4">
+                        @vacancy.Deadline?.ToString("dd MMM, yyyy")
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="text-blue-600 font-semibold text-sm">@vacancy.Department</div>
+                        <h4 class="text-lg font-bold text-gray-900">@vacancy.Title</h4>
+                    </div>
+
+                    <p class="text-sm text-gray-700 line-clamp-3 mb-4">@vacancy.Description</p>
+
+                    <div class="text-sm text-gray-600 mb-2">
+                        <i class="bi bi-play-circle"></i> Start: @vacancy.StartDate.ToString("dd MMM, yyyy")
+                    </div>
+
+                    <div class="text-xs text-gray-500">
+                        <i class="bi bi-person-circle"></i> Created by: @vacancy.CreatedBy
+                    </div>
+
+                    <div class="mt-4 text-right">
+                        <NavLink href="@($"/vacancy/{vacancy.Id}")"
+                                 class="text-blue-600 hover:underline font-medium text-sm">
+                            View Details →
+                        </NavLink>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (TotalPages > 1)
+    {
+        <div class="flex justify-center mt-10">
+            <nav class="inline-flex shadow-sm rounded-md" aria-label="Pagination">
+                <button class="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100"
+                        @onclick="@(() => GoToPage(CurrentPage - 1))"
+                        disabled="@(CurrentPage == 1)">
+                    « Previous
+                </button>
+
+                @for (int i = 1; i <= TotalPages; i++)
+                {
+                    <button class="px-4 py-2 border border-gray-300 text-sm font-medium @(i == CurrentPage ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100")"
+                            @onclick="@(() => GoToPage(i))">
+                        @i
+                    </button>
+                }
+
+                <button class="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100"
+                        @onclick="@(() => GoToPage(CurrentPage + 1))"
+                        disabled="@(CurrentPage == TotalPages)">
+                    Next »
+                </button>
+            </nav>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Vacancy> vacancies;
+    private bool IsAdmin = false;
+
+    private string _selectedTitle = string.Empty;
+    private string selectedTitle
+    {
+        get => _selectedTitle;
+        set
+        {
+            if (_selectedTitle != value)
+            {
+                _selectedTitle = value;
+                CurrentPage = 1;
+            }
+        }
+    }
+
+    private DateTime? _filterStartDate = null;
+    private DateTime? filterStartDate
+    {
+        get => _filterStartDate;
+        set
+        {
+            if (_filterStartDate != value)
+            {
+                _filterStartDate = value;
+                CurrentPage = 1;
+            }
+        }
+    }
+
+    private int CurrentPage = 1;
+    private int PageSize = 8;
+    private int TotalPages => (int)Math.Ceiling((double)FilteredVacancies.Count() / PageSize);
+
+    private List<string> AvailableTitles => vacancies?
+        .Select(v => v.Title)
+        .Distinct()
+        .OrderBy(t => t)
+        .ToList() ?? new List<string>();
+
+    private IEnumerable<Vacancy> FilteredVacancies =>
+        vacancies?
+            .Where(v => string.IsNullOrWhiteSpace(selectedTitle) || v.Title == selectedTitle)
+            .Where(v => !filterStartDate.HasValue || v.StartDate.Date >= filterStartDate.Value.Date)
+            .ToList() ?? new List<Vacancy>();
+
+    private IEnumerable<Vacancy> PagedVacancies =>
+        FilteredVacancies
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            using var scope = ServiceProvider.CreateScope();
+            var roleService = scope.ServiceProvider.GetRequiredService<UserRoleService>();
+            IsAdmin = await roleService.IsAdminAsync(userId);
+        }
+
+        vacancies = await VacancyService.GetVacanciesAsync();
+    }
+
+    private void ClearFilters()
+    {
+        selectedTitle = string.Empty;
+        filterStartDate = null;
+        CurrentPage = 1;
+    }
+
+    private void GoToPage(int page)
+    {
+        int total = TotalPages;
+        if (page < 1) page = 1;
+        if (page > total) page = total;
+
+        CurrentPage = page;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,109 @@
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
+@inject ILogger<Login> Logger
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <!-- Login Card -->
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+            <p class="text-gray-600">Sign in to your account to continue</p>
+        </div>
+
+        <!-- Error Message -->
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+                <svg class="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="text-red-800 text-sm">@((MarkupString)Message)</div>
+            </div>
+        }
+
+        <!-- Login Form -->
+        <form method="post" action="/api/account/login" FormName="LoginForm" class="space-y-6">
+            <!-- Email Input -->
+            <div>
+                <label for="Email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input id="Email" name="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                       required placeholder="Enter your email" />
+            </div>
+
+            <!-- Password Input -->
+            <div>
+                <label for="Password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input id="Password" name="Password" type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                       required placeholder="Enter your password" />
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="flex items-center justify-between">
+                <label class="flex items-center text-sm text-gray-700 cursor-pointer">
+                    <input id="RememberMe" name="RememberMe" type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                    <span class="ml-2">Remember me</span>
+                </label>
+                <a href="/forgotpassword" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                    Forgot Password?
+                </a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-blue-200">
+                Sign In
+            </button>
+        </form>
+
+        <!-- Registration Link -->
+        <div class="text-center mt-8 pt-6 border-t border-gray-200">
+            <p class="text-gray-600 text-sm">
+                Don't have an account?
+                <a href="/register" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors ml-1">
+                    Create account
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel Input = new LoginModel();
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Login model containing user credentials and remember me option
+    /// </summary>
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
+        public string Password { get; set; }
+
+        public bool RememberMe { get; set; }
+    }
+
+    /// <summary>
+    /// Handles form submission by redirecting to login API endpoint
+    /// </summary>
+    private void HandleValidSubmit()
+    {
+        // Build query string with encoded parameters
+        var query = $"Email={Uri.EscapeDataString(Input.Email)}&Password={Uri.EscapeDataString(Input.Password)}&RememberMe={Input.RememberMe}";
+        var url = $"/api/account/login?{query}";
+
+        // Navigate to login endpoint with parameters
+        NavigationManager.NavigateTo(url, forceLoad: true);
+    }
+}

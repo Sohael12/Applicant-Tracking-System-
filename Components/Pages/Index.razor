@@ -1,0 +1,186 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Authorization
+@inject UserRoleService RoleService
+@inject AuthenticationStateProvider AuthProvider
+
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white py-20 lg:py-28">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <!-- Logo/Brand -->
+                <div class="flex justify-center mb-6">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Main Heading -->
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    Streamline Your 
+                    <span class="block bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">Recruitment Process</span>
+                </h1>
+                
+                <!-- Subtitle -->
+                <p class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-10 leading-relaxed">
+                    Advanced Applicant Tracking System designed to optimize hiring for both candidates and employers
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <NavLink href="/vacancies" 
+                             class="group bg-white text-blue-700 px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center">
+                        <svg class="w-5 h-5 mr-3 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Browse Job Opportunities
+                    </NavLink>
+                    @if (IsAdmin || IsManager)
+{
+    <NavLink href="/create-vacancy" 
+             class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-blue-700 transition-all duration-300">
+        Post a Vacancy
+    </NavLink>
+}
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What is ATS Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+                    What is Our ATS Platform?
+                </h2>
+                <div class="bg-blue-50 rounded-2xl p-8 border border-blue-100">
+                    <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
+                        Our Applicant Tracking System is a comprehensive solution that streamlines the entire recruitment workflow. 
+                        Candidates can track their application progress in real-time, while employers benefit from efficient vacancy 
+                        management and applicant tracking tools.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Key Features & Benefits
+                </h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Designed to enhance the recruitment experience for everyone involved
+                </p>
+            </div>
+
+            <div class="grid gap-8 md:grid-cols-3">
+                <!-- Feature 1 -->
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Real-Time Application Tracking</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Candidates receive instant updates on their application status, from submission through to final decision.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Easy Vacancy Management</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Employers can create and manage job postings effortlessly with our intuitive interface and management tools.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Applicant Management</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Streamline candidate evaluation with organized applicant pipelines and collaborative review features.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-blue-700 to-indigo-800 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                Ready to Get Started?
+            </h2>
+            <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+                Join organizations and candidates who are already transforming their recruitment experience
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <NavLink href="/vacancies" 
+                         class="bg-white text-blue-700 px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                    Explore Job Opportunities
+                </NavLink>
+               @if (IsAdmin || IsManager)
+{
+    <NavLink href="/create-vacancy" 
+             class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-blue-700 transition-all duration-300">
+        Post a Vacancy
+    </NavLink>
+}
+
+            </div>
+            
+            <!-- Additional Links -->
+            <div class="mt-8 flex justify-center space-x-6 text-blue-200 text-sm">
+                <NavLink href="/login" class="hover:text-white transition-colors">Already have an account?</NavLink>
+                <span class="text-blue-300">•</span>
+                <NavLink href="/register" class="hover:text-white transition-colors">Create new account</NavLink>
+            </div>
+        </div>
+    </section>
+
+    
+</div>
+@code {
+    private bool IsAdmin = false;
+    private bool IsManager = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                IsAdmin = await RoleService.IsAdminAsync(userId);
+                IsManager = await RoleService.IsManagerAsync(userId);
+            }
+        }
+    }
+}
